@@ -59,3 +59,4 @@ psql -U postgres < students.sql
 touch student_info.sh
 chmod +x student_info.sh
 __vsc_prompt_cmd_original
+./student_info.sh
