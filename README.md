@@ -399,6 +399,78 @@ camper: /project$ ./student_info.sh
 ![Imagen9](https://github.com/user-attachments/assets/8c0e9c28-83b0-4b81-829c-3a1105be94e7)
 ![Imagen11](https://github.com/user-attachments/assets/ab6a1746-e145-435a-be53-6dbe884d8d8d)
 
+### Paso 26:  Consultar las columnas de las tablas **_`students`_** y **_`majors`_**
+1. Consulta una **_`FULL JOIN`_** en sus tablas de **_`students`_** y **_`majors`_**.
+ ```bash
+SELECT * FROM students FULL JOIN majors ON students.major_id = majors.major_id;
+```
+2. Si observa los nombres de las columnas, muestra dos columnas major_id. Uno de la tabla de  **_`students`_** y otro de la tabla de **_`majors`_**. Si intentara consultarlo usando major_id, obtendría un error. Debería especificar de qué tabla desea la columna de esta manera: **_`<tabla>.<columna>`_**. Ingrese la misma combinación pero solo obtenga la columna major_id de la tabla de  **_`students`_**.
+ ```bash
+SELECT students.major_id FROM students FULL JOIN majors ON students.major_id = majors.major_id;
+```
+3. Se utiliza **_`AS`_** para cambiar el nombre de las columnas. Puede usarlo para cambiar el nombre de las tablas o también darles alias. Aquí hay un ejemplo: **_`SELECT * FROM <table> AS <new_name>;`_**.En la consulta anterior cambie el nombre de la tabla de **_`majors`_** a m. En cualquier lugar donde se haga referencia a la tabla de **_`majors`_**, deberá utilizar m en lugar de mayores.
+ ```bash
+SELECT students.major_id FROM students FULL JOIN majors AS m ON students.major_id = m.major_id;
+```
+4. Se puede hacer que algunas consultas sean más fáciles de leer. Ingrese la misma consulta, pero cambie también el nombre de la tabla de **_`students`_** a s.
+ ```bash
+SELECT students.major_id FROM students AS s FULL JOIN majors AS m ON s.major_id = m.major_id;
+```
+5. Hay una palabra clave de acceso directo, **_`USING`_** para unir tablas si la columna de clave externa tiene el mismo nombre en ambas tablas. Aquí hay un ejemplo: **_`SELECT * FROM <table_1> FULL JOIN <table_2> USING(<columna>);`_**. Utilice este método para ver todas las columnas de la tabla de **_`students`_** y **_`majors`_**. No utilices ningún alias.
+ ```bash
+SELECT * FROM students FULL JOIN majors USING(major_id);
+```
+6. Tenga en cuenta que las dos **_`columnas major_id`_** se convirtieron en una con **_`USING`_**. Para saber qué cursos está tomando un estudiante, deberá unir todas las tablas. Puede agregar una tercera tabla a una combinación como esta: **_`SELECT * FROM <table_1> FULL JOIN <table_2> USING(<columna>) FULL JOIN <table_3> USING(<columna>)`_**. Este ejemplo unirá las dos primeras tablas en una, convirtiéndola en la tabla de la izquierda para la segunda unión. Utilice este método para unir las dos tablas de la consulta anterior con la tabla **_`majors_courses`_**.
+ ```bash
+SELECT * FROM students FULL JOIN majors USING(major_id) FULL JOIN majros_courses USING(major_id);
+```
+7. Lo que estás viendo es cada combinación única de filas en la base de datos. Los estudiantes con una especialización aparecen varias veces, una por cada curso incluido en la especialización. Las carreras sin estudiantes están ahí junto con los cursos para ellos. Se incluyen los estudiantes sin especialización, no tienen cursos y solo aparecen una vez. Puedes unir tantas tablas como quieras. Une la última tabla al comando anterior para obtener los nombres de los cursos con toda esta información.
+ ```bash
+SELECT * FROM students FULL JOIN majors USING(major_id) FULL JOIN majros_courses USING(major_id);
+```
+8.  Los estudiantes con una especialización aparecen varias veces, una por cada curso incluido en la especialización. Las carreras sin estudiantes están ahí junto con los cursos para ellos. Se incluyen los estudiantes sin especialización, no tienen cursos y solo aparecen una vez. Puedes unir tantas mesas como quieras. Se une la última tabla al comando anterior para obtener los nombres de los cursos con toda esta información.
+ ```bash
+SELECT * FROM students FULL JOIN majors USING(major_id) FULL JOIN majros_courses USING(major_id) FULL JOIN courses USING(course_id);
+```
+
+### Paso 27: Agregar otra declaración y consulta desde el script **_`student_info.sh`_**
+Se agrega otro **_`comando de eco`_**.  Que diga: **_`List of unique courses, in reverse alphabetical order, that no student or 'Obie Hilpert' is taking:`_**
+ ```bash
+echo -e "\nList of unique courses, in reverse alphabetical order, that no student or 'Obie Hilpert' is taking:"
+```
+Se agrega un **_`comando de eco`_** para imprimir los resultados de: Lista de cursos únicos, en orden alfabético inverso, que ningún estudiante u 'Obie Hilpert':
+ ```bash
+cho "$($PSQL "SELECT DISTINCT(course) FROM students FULL JOIN majors USING(major_id) FULL JOIN majors_courses USING(major_id) FULL JOIN courses USING(course_id) WHERE student_id IS NULL OR (first_name = 'Obie' AND last_name = 'Hilpert') ORDER BY course DESC")"
+```
+En el terminal de bash se ejecuta el script **_`student_info.sh`_**  para ver los resultados de la consulta.
+ ```bash
+camper: /project$ ./student_info.sh
+```
+![Imagen12](https://github.com/user-attachments/assets/9b8b87a2-ab44-4c8e-bcb3-cc64fdab64ff)
+
+![Imagen13](https://github.com/user-attachments/assets/9a1ea38d-5dee-4e2d-a62c-764583a5ed1f)
+
+![Imagen14](https://github.com/user-attachments/assets/ad0deb91-bf20-4a3c-82d2-840f83b82551)
+
+
+### Paso 28: Agregar otra declaración y consulta desde el script **_`student_info.sh`_**
+Se agrega otro **_`comando de eco`_**.  Que diga: **_`List of courses, in alphabetical order, with only one student enrolled:.
+`_**
+ ```bash
+echo -e "\nList of courses, in alphabetical order, with only one student enrolled:"
+```
+Se agrega un **_`comando de eco`_** para imprimir los resultados de: Listado de cursos, en orden alfabético, con un solo alumno matriculado'
+ ```bash
+echo "$($PSQL "SELECT course FROM students INNER JOIN majors_courses USING(major_id) INNER JOIN courses USING(course_id) GROUP BY course HAVING COUNT(student_id) = 1 ORDER BY course")"
+```
+En el terminal de bash se ejecuta el script **_`student_info.sh`_**  para ver los resultados de la consulta.
+ ```bash
+camper: /project$ ./student_info.sh
+```
+![Imagen15](https://github.com/user-attachments/assets/c4a829ab-6666-43a4-8c05-42a88992934e)
+![Imagen16](https://github.com/user-attachments/assets/45768225-1bb5-42c3-ad44-9e6ff9b5bf5d)
+![Imagen17](https://github.com/user-attachments/assets/efd8ad34-281b-44bb-b48c-15fd2a996eb0)
+![Imagen18](https://github.com/user-attachments/assets/e501dd2f-9484-4bd1-a05e-e3b7b30527ed)
 
 
 
